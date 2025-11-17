@@ -1,6 +1,6 @@
 import unittest
 from enum import Enum
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 from textnode import TextNode, TextType
 
 class TestHTMLNode(unittest.TestCase):
@@ -32,3 +32,40 @@ class TestLeafNode(unittest.TestCase):
     def test_value_error(self):
         with self.assertRaises(ValueError):
             LeafNode("p", None)
+
+class TestParentNode(unittest.TestCase):
+    def test_to_html(self):
+        node = ParentNode(
+            "p",
+            [
+                LeafNode("b", "Bold text"),
+                LeafNode(None, "Normal text"),
+                LeafNode("i", "italic text"),
+                LeafNode(None, "Normal text"),
+            ],
+        )
+        self.assertEqual(node.to_html(), "<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>")
+
+    def test_to_html_nested(self):
+        node = ParentNode(
+            "div",
+            [
+                ParentNode(
+                    "p",
+                    [
+                        LeafNode("b", "Bold text"),
+                        LeafNode(None, "Normal text"),
+                    ],
+                ),
+                LeafNode("i", "italic text"),
+            ],
+        )
+        self.assertEqual(node.to_html(), "<div><p><b>Bold text</b>Normal text</p><i>italic text</i></div>")
+
+    def test_value_error_no_tag(self):
+        with self.assertRaises(ValueError):
+            ParentNode(None, [LeafNode("b", "Bold text")])
+
+    def test_value_error_no_children(self):
+        with self.assertRaises(ValueError):
+            ParentNode("p", None)
