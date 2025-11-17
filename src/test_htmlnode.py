@@ -1,6 +1,6 @@
 import unittest
 from enum import Enum
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
 from textnode import TextNode, TextType
 
 class TestHTMLNode(unittest.TestCase):
@@ -69,3 +69,36 @@ class TestParentNode(unittest.TestCase):
     def test_value_error_no_children(self):
         with self.assertRaises(ValueError):
             ParentNode("p", None)
+
+class TestTextNodeToHTMLNode(unittest.TestCase):
+    def test_normal_text(self):
+        text_node = TextNode("This is normal text", TextType.NORMAL)
+        html_node = text_node_to_html_node(text_node)
+        self.assertEqual(html_node.to_html(), "This is normal text")
+
+    def test_bold_text(self):
+        text_node = TextNode("This is bold text", TextType.BOLD)
+        html_node = text_node_to_html_node(text_node)
+        self.assertEqual(html_node.to_html(), "<b>This is bold text</b>")
+
+    def test_italic_text(self):
+        text_node = TextNode("This is italic text", TextType.ITALIC)
+        html_node = text_node_to_html_node(text_node)
+        self.assertEqual(html_node.to_html(), "<i>This is italic text</i>")
+
+    def test_code_text(self):
+        text_node = TextNode("This is code text", TextType.CODE)
+        html_node = text_node_to_html_node(text_node)
+        self.assertEqual(html_node.to_html(), "<code>This is code text</code>")
+
+    def test_link_text(self):
+        text_node = TextNode("Click here", TextType.LINK, "https://www.google.com")
+        html_node = text_node_to_html_node(text_node)
+        self.assertEqual(html_node.to_html(), '<a href="https://www.google.com">Click here</a>')
+
+    def test_image_text(self):
+        text_node = TextNode("Image description", TextType.IMAGE, "https://www.example.com/image.png")
+        html_node = text_node_to_html_node(text_node)
+        self.assertEqual(html_node.to_html(), '<img src="https://www.example.com/image.png" alt="Image description" />')
+
+    
