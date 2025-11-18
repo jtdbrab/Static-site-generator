@@ -10,11 +10,11 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_repr(self):
         node = HTMLNode(tag="a", value="Click here", props={"href": "https://www.google.com"})
-        self.assertEqual(repr(node), "HTMLNode: a, Click here, [], {'href': 'https://www.google.com'}")
+        self.assertEqual(repr(node), 'HTMLNode(tag=a, value=Click here, children=[], props={"href": "https://www.google.com"})')
 
     def test_empty_node(self):
         node = HTMLNode()
-        self.assertEqual(repr(node), 'HTMLNode: None, None, [], {}')
+        self.assertEqual(repr(node), 'HTMLNode(tag=None, value=None, children=[], props={})')
 
 class TestLeafNode(unittest.TestCase):
     def test_to_html_with_tag(self):
@@ -101,4 +101,12 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         html_node = text_node_to_html_node(text_node)
         self.assertEqual(html_node.to_html(), '<img src="https://www.example.com/image.png" alt="Image description" />')
 
-    
+    def test_unsupported_text_type(self):
+        class UnsupportedTextType(Enum):
+            UNSUPPORTED = "unsupported"
+        text_node = TextNode("Unsupported text", UnsupportedTextType.UNSUPPORTED)
+        with self.assertRaises(ValueError):
+            text_node_to_html_node(text_node)
+
+if __name__ == "__main__":
+    unittest.main()

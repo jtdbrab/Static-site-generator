@@ -1,5 +1,4 @@
 import unittest
-
 from textnode import TextNode, TextType, block_to_block_type
 
 class TestTextNode(unittest.TestCase):
@@ -7,24 +6,21 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a text node", TextType.BOLD)
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertEqual(node, node2)
-    def test_noteq(self):
-        node1 = TextNode(text="This is a text node", text_type=TextType.BOLD)
-        node2 = TextNode(text="This is a different text node", text_type=TextType.BOLD)
-        self.assertNotEqual(node1, node2)
 
-    def test_noteq_test_type(self):
-        node1 = TextNode(text="This is a text node", text_type=TextType.BOLD)
-        node2 = TextNode(text="This is a text node", text_type=TextType.ITALIC)
-        self.assertNotEqual(node1, node2)
+    def test_not_eq_different_text(self):
+        node = TextNode("This is a text node", TextType.BOLD)
+        node2 = TextNode("This is another text node", TextType.BOLD)
+        self.assertNotEqual(node, node2)
 
-    def test_urlnoteq(self):
-        node1 = TextNode(text="This is a text node", text_type=TextType.BOLD, url=None)
-        node2 = TextNode(
-            text="This is a different text node",
-            text_type=TextType.BOLD,
-            url="http://boot.dev",
-        )
-        self.assertNotEqual(node1, node2)
+    def test_not_eq_different_text_type(self):
+        node = TextNode("This is a text node", TextType.BOLD)
+        node2 = TextNode("This is a text node", TextType.ITALIC)
+        self.assertNotEqual(node, node2)
+
+    def test_not_eq_different_url(self):
+        node = TextNode("This is a text node", TextType.LINK, "https://www.boot.dev")
+        node2 = TextNode("This is a text node", TextType.LINK, "https://www.example.com")
+        self.assertNotEqual(node, node2)
 
 class TestBlockToBlockType(unittest.TestCase):
     def test_block_to_block_type(self):
@@ -40,7 +36,6 @@ class TestBlockToBlockType(unittest.TestCase):
         self.assertEqual(block_to_block_type("- item 1\n- item 2"), "unordered_list")
         self.assertEqual(block_to_block_type("1. item 1\n2. item 2"), "ordered_list")
         self.assertEqual(block_to_block_type("This is a normal paragraph."), "paragraph")
-
 
 if __name__ == "__main__":
     unittest.main()

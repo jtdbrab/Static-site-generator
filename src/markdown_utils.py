@@ -1,7 +1,7 @@
 import re
-from htmlnode import HTMLNode, ParentNode, LeafNode
+from htmlnode import *
 from textnode import block_to_block_type
-from split_nodes import split_nodes_delimiter, split_nodes_image, split_nodes_link
+from text_utils import *
 
 def extract_markdown_images(text):
     pattern = r'!\[([^\]]+)\]\(([^)]+)\)'
@@ -41,6 +41,11 @@ def text_to_children(text):
             text = text[end:]
     return nodes
 
+def inline_html(text):
+    nodes = text_to_textnodes(text)
+    html_nodes = [text_node_to_html_node(n) for n in nodes]
+    return "".join(n.to_html() for n in html_nodes)
+
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     parent_node = ParentNode("div", children=[])
@@ -49,28 +54,25 @@ def markdown_to_html_node(markdown):
         block_type = block_to_block_type(block)
         if block_type.startswith("heading"):
             level = int(block_type[-1])
-            node = LeafNode(f"h{level}", block[level + 1:].strip())
+            content = block[level + 1:].strip()
+            node = LeafNode(f"h{level}", inline_html(content))
         elif block_type == "code":
             node = ParentNode("pre", [LeafNode("code", block[3:-3].strip())])
         elif block_type == "quote":
-            node = ParentNode("blockquote", [LeafNode(None, block.replace("> ", "").strip())])
+            lines = [ln.lstrip("> ").lstrip(">") for ln in block.split("\n")]
+            content = " ".join(lines).strip()
+            node = ParentNode("blockquote", [LeafNode(None, inline_html(content))])
         elif block_type == "unordered_list":
-            node = ParentNode("ul", [ParentNode("li", [LeafNode(None, item[2:].strip())]) for item in block.split("\n")])
+            items = [item[2:].strip() for item in block.split("\n")]
+            lis = [ParentNode("li", [LeafNode(None, inline_html(it))]) for it in items]
+            node = ParentNode("ul", lis)
         elif block_type == "ordered_list":
-            node = ParentNode("ol", [ParentNode("li", [LeafNode(None, item.split(". ", 1)[1].strip())]) for item in block.split("\n")])
+            items = [it.split(". ", 1)[1].strip() for it in block.split("\n")]
+            lis = [ParentNode("li", [LeafNode(None, inline_html(it))]) for it in items]
+            node = ParentNode("ol", lis)
         else:
-            node = LeafNode("p", block.strip())
+            node = LeafNode("p", inline_html(block.strip()))
 
         parent_node.children.append(node)
 
     return parent_node
-
-def text_to_textnodes(text):
-    nodes = [TextNode(text, TextType.NORMAL)]
-    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
-    nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
-    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
-    nodes = split_nodes_image(nodes)
-    nodes = split_nodes_link(nodes)
-    return nodes
-

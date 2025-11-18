@@ -1,5 +1,5 @@
 import unittest
-from utils import extract_markdown_images, extract_markdown_links, markdown_to_blocks, markdown_to_html_node
+from markdown_utils import extract_markdown_images, extract_markdown_links, markdown_to_blocks, markdown_to_html_node
 from htmlnode import HTMLNode
 
 class TestMarkdownUtils(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestMarkdownUtils(unittest.TestCase):
         text = "This is text with no links."
         result = extract_markdown_links(text)
         self.assertEqual(result, [])
-    
+
     def test_markdown_to_blocks(self):
         markdown = """# This is a heading
 
@@ -69,3 +69,37 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
 
+    def test_markdown_to_html_node(self):
+        markdown = """# Heading 1
+
+This is a paragraph with **bold** and *italic* text.
+
+* List item 1
+* List item 2
+
+> This is a quote
+
+```
+code block
+```"""
+        result = markdown_to_html_node(markdown)
+        expected = HTMLNode("div", children=[
+            HTMLNode("h1", children=[HTMLNode("text", children=["Heading 1"])]),
+            HTMLNode("p", children=[
+                HTMLNode("text", children=["This is a paragraph with "]),
+                HTMLNode("strong", children=[HTMLNode("text", children=["bold"])]),
+                HTMLNode("text", children=[" and "]),
+                HTMLNode("em", children=[HTMLNode("text", children=["italic"])]),
+                HTMLNode("text", children=[" text."])
+            ]),
+            HTMLNode("ul", children=[
+                HTMLNode("li", children=[HTMLNode("text", children=["List item 1"])]),
+                HTMLNode("li", children=[HTMLNode("text", children=["List item 2"])])
+            ]),
+            HTMLNode("blockquote", children=[HTMLNode("text", children=["This is a quote"])]),
+            HTMLNode("pre", children=[HTMLNode("code", children=[HTMLNode("text", children=["code block"])])])
+        ])
+        self.assertEqual(result.to_dict(), expected.to_dict())
+
+if __name__ == "__main__":
+    unittest.main()

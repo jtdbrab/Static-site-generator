@@ -8,27 +8,21 @@ class TextType(Enum):
     LINK = "link"
     IMAGE = "image"
 
-class TextNode():
+class TextNode:
     def __init__(self, text, text_type, url=None):
         self.text = text
-        if isinstance(text_type, TextType):
-            self.text_type = text_type
-        else:
-            self.text_type = TextType(text_type)
+        self.text_type = text_type
         self.url = url
-    
+
     def __eq__(self, other):
-        if not isinstance(other, TextNode):
-            return False
         return (
             self.text == other.text and
             self.text_type == other.text_type and
             self.url == other.url
         )
-    
+
     def __repr__(self):
         return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
-
 
 def block_to_block_type(block):
     if block.startswith("#"):
@@ -54,6 +48,5 @@ def block_to_block_type(block):
         return "ordered_list"
     else:
         return "paragraph"
-        
 
 
