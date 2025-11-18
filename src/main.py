@@ -6,23 +6,25 @@ from textnode import TextNode, TextType
 from markdown_utils import markdown_to_html_node
 
 def copy_files_recursive(source_dir_path, dest_dir_path):
-    if not os.path.exists(dest_dir_path):
-        os.mkdir(dest_dir_path)
-
+    os.makedirs(dest_dir_path, exist_ok=True)
     for filename in os.listdir(source_dir_path):
         from_path = os.path.join(source_dir_path, filename)
         dest_path = os.path.join(dest_dir_path, filename)
         print(f" * {from_path} -> {dest_path}")
-        if os.path.isfile(from_path):
-            shutil.copy(from_path, dest_path)
-        else:
+        if os.path.isdir(from_path):
+            os.makedirs(dest_path, exist_ok=True)
             copy_files_recursive(from_path, dest_path)
+        else:
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+            shutil.copy(from_path, dest_path)
 
 def extract_title(markdown):
     for line in markdown.split('\n'):
         if line.startswith('# '):
             return line[2:].strip()
     raise Exception("No H1 title found in markdown")
+
+
 
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     for filename in os.listdir(dir_path_content):
@@ -53,6 +55,11 @@ def generate_page(from_path, template_path, dest_path, basepath):
     template = template.replace("{{ Content }}", html)
     template = template.replace('href="/', 'href="' + basepath)
     template = template.replace('src="/', 'src="' + basepath)
+
+    # python
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, "w") as f:
+        f.write(template)
 
 dir_path_static = "./static"
 dir_path_public = "./docs"
